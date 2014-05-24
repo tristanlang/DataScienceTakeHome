@@ -24,12 +24,13 @@ uniques = experiment.groupby(['user_id']).filter(lambda x: len(x) == 1)
 unique_conversions = uniques.groupby(['landing_page']).sum() # new = 9527, old = 9049
 unique_counts = uniques.groupby(['landing_page']).count() # new = 90815, old = 90813
 
-old_count = unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted']
+# old_count = unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted']
+old_count = unique_counts.ix['old_page', 'converted'] + duplicate_counts.ix['old_page', 'converted']
 old_conv = unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']
 new_count = unique_counts.ix['new_page', 'converted']
 new_conv = unique_conversions.ix['new_page', 'converted']
 
-old_conv_rate = (unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']) / (unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted'])
+old_conv_rate = (unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']) / (unique_counts.ix['old_page', 'converted'] + duplicate_counts.ix['old_page', 'converted'])
 new_conv_rate = unique_conversions.ix['new_page', 'converted'] / unique_counts.ix['new_page', 'converted']
 
 total_conv_rate = (old_conv + new_conv) / (old_count + new_count)
@@ -60,6 +61,20 @@ duplicate_counts = duplicates.groupby(['landing_page', 'country']).count() # new
 uniques = experiment.groupby(['user_id']).filter(lambda x: len(x) == 1)
 unique_conversions = uniques.groupby(['landing_page', 'country']).sum() # new = 9527, old = 9049
 unique_counts = uniques.groupby(['landing_page', 'country']).count() # new = 90815, old = 90813
+
+old_counts = unique_counts.unstack().ix['old_page'].ix['converted'] + duplicate_counts.unstack().ix['old_page'].ix['converted']
+old_convs = unique_conversions.unstack().ix['old_page'].ix['converted'] + duplicate_conversions.unstack().ix['old_page'].ix['converted'] 
+new_counts = unique_counts.unstack().ix['new_page'].ix['converted']
+new_convs = unique_conversions.unstack().ix['new_page'].ix['converted']
+
+old_conv_rate = old_convs / old_counts
+new_conv_rate = new_convs / new_counts
+
+total_conv_rate = (old_conv + new_conv) / (old_count + new_count)
+stdev = (total_conv_rate * (1 - total_conv_rate) / (old_count + new_count))**0.5
+t_new_page = (new_conv_rate - old_conv_rate) / stdev
+
+print(total_conv_rate, stdev, t_new_page)
 
 '''old_count = unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted']
 old_conv = unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']
