@@ -17,7 +17,7 @@ experiment = pd.read_csv('experiment.csv')
 
 duplicates = experiment.groupby(['user_id']).filter(lambda x: len(x) > 1)
 duplicate_conversions = duplicates.groupby(['landing_page']).sum() # new = 0, old = 501
-duplicate_counts = duplicates.groupby(['landing_page']).count() # new = 4761, old = 4759
+duplicate_counts = duplicates.groupby(['landing_page']).count() # new = 4759, old = 4761
 
 uniques = experiment.groupby(['user_id']).filter(lambda x: len(x) == 1)
 unique_conversions = uniques.groupby(['landing_page']).sum() # new = 9527, old = 9049
@@ -28,19 +28,21 @@ old_conv = unique_conversions.ix['old_page', 'converted'] + duplicate_conversion
 new_count = unique_counts.ix['new_page', 'converted']
 new_conv = unique_conversions.ix['new_page', 'converted']
 
-old_conv_rate = (unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']) / (unique_counts.ix['old_page', 'converted'] + duplicate_counts.ix['old_page', 'converted'])
-new_conv_rate = unique_conversions.ix['new_page', 'converted'] / unique_counts.ix['new_page', 'converted']
+old_conv_rate = old_conv / old_count
+new_conv_rate = new_conv / new_count
 
 total_conv_rate = (old_conv + new_conv) / (old_count + new_count)
 stdev = (total_conv_rate * (1 - total_conv_rate) / (old_count + new_count))**0.5
-t_new_page = (new_conv_rate - old_conv_rate) / stdev
+Z_new_page = (new_conv_rate - old_conv_rate) / stdev
 
-print(total_conv_rate, stdev, t_new_page)
+print(old_conv_rate)
+print(new_conv_rate)
+print(total_conv_rate, stdev, Z_new_page)
 
 '''
 total_conv_rate = 0.102350460596
 stdev = 0.000702082531901
-t_new_page = 7.09746213775
+Z_new_page = 7.09746213775
 '''
 
 
@@ -69,9 +71,11 @@ new_conv_rate = new_convs / new_counts
 
 total_conv_rate = (old_convs + new_convs) / (old_counts + new_counts)
 stdev = (total_conv_rate * (1 - total_conv_rate) / (old_counts + new_counts))**0.5
-t_new_page = (new_conv_rate - old_conv_rate) / stdev
+Z_new_page = (new_conv_rate - old_conv_rate) / stdev
 
-print(total_conv_rate, stdev, t_new_page)
+print(old_conv_rate)
+print(new_conv_rate)
+print(total_conv_rate, stdev, Z_new_page)
 
 '''
 total_conv_rate
@@ -93,7 +97,35 @@ US         8.639609
 ##
 
 
-NEXT STEPS:
--check work
--write up results in blog post
+unique_conversions
+new_page     CA       1508
+             UK       2532
+             US       5235
+old_page     CA       1480
+             UK       2506
+             US       4798
+
+unique_counts
+new_page     CA       14623
+             UK       24370
+             US       48962
+old_page     CA       14622
+             UK       24561
+             US       48740
+
+duplicate_conversions
+new_page     CA       0
+             UK       0
+             US       0
+old_page     CA       83
+             UK       147
+             US       262
+
+duplicate_counts
+new_page     CA       779
+             UK       1263
+             US       2557
+old_page     CA       779
+             UK       1263
+             US       2559
 '''
