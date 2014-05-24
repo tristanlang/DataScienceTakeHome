@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas import DataFrame
 import numpy as np
 
 
@@ -24,7 +23,6 @@ uniques = experiment.groupby(['user_id']).filter(lambda x: len(x) == 1)
 unique_conversions = uniques.groupby(['landing_page']).sum() # new = 9527, old = 9049
 unique_counts = uniques.groupby(['landing_page']).count() # new = 90815, old = 90813
 
-# old_count = unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted']
 old_count = unique_counts.ix['old_page', 'converted'] + duplicate_counts.ix['old_page', 'converted']
 old_conv = unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']
 new_count = unique_counts.ix['new_page', 'converted']
@@ -39,6 +37,12 @@ t_new_page = (new_conv_rate - old_conv_rate) / stdev
 
 print(total_conv_rate, stdev, t_new_page)
 
+'''
+total_conv_rate = 0.102350460596
+stdev = 0.000702082531901
+t_new_page = 7.09746213775
+'''
+
 
 ####
 
@@ -46,21 +50,14 @@ print(total_conv_rate, stdev, t_new_page)
 # concatenate unique list with the unique version of the duplicates
 country = pd.read_csv('country.csv').drop_duplicates()
 experiment = pd.merge(experiment, pd.read_csv('country.csv'), on='user_id').drop_duplicates()
-#print(experiment)
 
-'''
-NEXT STEPS:
--perform same sort of duplicate and unique counts and conversion sums for the datasets with country
--group by country
--look at conv rates and counts by country
-'''
 duplicates = experiment.groupby(['user_id']).filter(lambda x: len(x) > 1)
-duplicate_conversions = duplicates.groupby(['landing_page', 'country']).sum() # new = 0, old = 501
-duplicate_counts = duplicates.groupby(['landing_page', 'country']).count() # new = 4761, old = 4759
+duplicate_conversions = duplicates.groupby(['landing_page', 'country']).sum()
+duplicate_counts = duplicates.groupby(['landing_page', 'country']).count()
 
 uniques = experiment.groupby(['user_id']).filter(lambda x: len(x) == 1)
-unique_conversions = uniques.groupby(['landing_page', 'country']).sum() # new = 9527, old = 9049
-unique_counts = uniques.groupby(['landing_page', 'country']).count() # new = 90815, old = 90813
+unique_conversions = uniques.groupby(['landing_page', 'country']).sum()
+unique_counts = uniques.groupby(['landing_page', 'country']).count()
 
 old_counts = unique_counts.unstack().ix['old_page'].ix['converted'] + duplicate_counts.unstack().ix['old_page'].ix['converted']
 old_convs = unique_conversions.unstack().ix['old_page'].ix['converted'] + duplicate_conversions.unstack().ix['old_page'].ix['converted'] 
@@ -70,22 +67,33 @@ new_convs = unique_conversions.unstack().ix['new_page'].ix['converted']
 old_conv_rate = old_convs / old_counts
 new_conv_rate = new_convs / new_counts
 
-total_conv_rate = (old_conv + new_conv) / (old_count + new_count)
-stdev = (total_conv_rate * (1 - total_conv_rate) / (old_count + new_count))**0.5
+total_conv_rate = (old_convs + new_convs) / (old_counts + new_counts)
+stdev = (total_conv_rate * (1 - total_conv_rate) / (old_counts + new_counts))**0.5
 t_new_page = (new_conv_rate - old_conv_rate) / stdev
 
 print(total_conv_rate, stdev, t_new_page)
 
-'''old_count = unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted']
-old_conv = unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']
-new_count = unique_counts.ix['new_page', 'converted']
-new_conv = unique_conversions.ix['new_page', 'converted']
+'''
+total_conv_rate
+CA         0.102285
+UK         0.103299
+US         0.102682
 
-old_conv_rate = (unique_conversions.ix['old_page', 'converted'] + duplicate_conversions.ix['old_page', 'converted']) / (unique_counts.ix['new_page', 'converted'] + duplicate_counts.ix['new_page', 'converted'])
-new_conv_rate = unique_conversions.ix['new_page', 'converted'] / unique_counts.ix['new_page', 'converted']
+stdev
+CA         0.001749
+UK         0.001358
+US         0.000959
 
-total_conv_rate = (old_conv + new_conv) / (old_count + new_count)
-stdev = (total_conv_rate * (1 - total_conv_rate) / (old_count + new_count))**0.5
-t_new_page = (new_conv_rate - old_conv_rate) / stdev
+t_new_page
+CA         0.936811
+UK         0.857107
+US         8.639609
 
-print(total_conv_rate, stdev, t_new_page)'''
+
+##
+
+
+NEXT STEPS:
+-check work
+-write up results in blog post
+'''
